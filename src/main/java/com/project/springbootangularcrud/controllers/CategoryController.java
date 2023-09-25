@@ -32,6 +32,4 @@ public class CategoryController {
             return new ResponseEntity<>("Error Adding Category " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 }
