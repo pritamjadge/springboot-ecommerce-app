@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "bezkoder.app.jwtSecret",
+      "type": "java.lang.String",
+      "description": "Description for bezkoder.app.jwtSecret."
+    },
+    {
+      "name": "spring.http.multipart.enabled",
+      "type": "java.lang.String",
+      "description": "Description for spring.http.multipart.enabled."
+    }
+  ] }
