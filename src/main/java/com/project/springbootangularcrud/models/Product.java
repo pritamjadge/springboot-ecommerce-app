@@ -24,7 +24,7 @@ public class Product {
     private Integer productQty;
     private Double productPrice;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties("products")
     private Category category;
@@ -40,16 +40,15 @@ public class Product {
 
     private String createdBy;
 
-    public Product(Long productId, String productName, String productDescription, Integer productQty, Double productPrice, List<ProductImages> productImages, Date createdAt, String createdBy) {
+    public Product(Long productId, String productName, String productDescription, Integer productQty, Double productPrice, List<ProductImages> productImages) {
         this.productId = productId;
         this.productName = productName;
         this.productDescription = productDescription;
         this.productQty = productQty;
         this.productPrice = productPrice;
         this.productImages = productImages;
-        this.createdAt = createdAt;
-        this.createdBy = createdBy;
     }
+
 
     @Override
     public String toString() {

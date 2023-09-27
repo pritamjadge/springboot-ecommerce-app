@@ -2,8 +2,6 @@ package com.project.springbootangularcrud.controllers;
 
 import com.project.springbootangularcrud.models.Category;
 import com.project.springbootangularcrud.repository.CategoryRepo;
-import com.project.springbootangularcrud.repository.ProductRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,9 +1,9 @@
 {
   "properties": [
     {
-      "name": "bezkoder.app.jwtSecret",
+      "name": "jwtSecurity.app.jwtSecret",
       "type": "java.lang.String",
-      "description": "Description for bezkoder.app.jwtSecret."
+      "description": "Description for jwtSecurity.app.jwtSecret."
     },
     {
       "name": "spring.http.multipart.enabled",

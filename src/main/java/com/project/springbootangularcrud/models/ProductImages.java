@@ -22,7 +22,7 @@ public class ProductImages {
     private String imageName;
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "product_id")
     @JsonBackReference
     private Product product;
@@ -31,4 +31,10 @@ public class ProductImages {
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp // This annotation automatically sets the timestamp on creation
     private Date createdAt;
+
+    public ProductImages(Long id, String imageName, String imageUrl) {
+        this.id = id;
+        this.imageName = imageName;
+        this.imageUrl = imageUrl;
+    }
 }

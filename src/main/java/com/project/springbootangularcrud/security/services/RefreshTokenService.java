@@ -16,7 +16,7 @@ import com.project.springbootangularcrud.repository.UserRepository;
 
 @Service
 public class RefreshTokenService {
-  @Value("${bezkoder.app.jwtRefreshExpirationMs}") // 2.5 min
+  @Value("${jwtSecurity.app.jwtRefreshExpirationMs}") // 2.5 min
   private Long refreshTokenDurationMs;
 
   @Autowired

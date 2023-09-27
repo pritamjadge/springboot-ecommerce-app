@@ -6,18 +6,20 @@ import com.project.springbootangularcrud.models.Product;
 import com.project.springbootangularcrud.models.ProductImages;
 import com.project.springbootangularcrud.repository.ProductImageRepo;
 import com.project.springbootangularcrud.repository.ProductRepo;
+import com.project.springbootangularcrud.utility.ImageUploadUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,18 +39,10 @@ public class ProductService {
     }
 
     @Transactional
-    public void addProduct(Product product, MultipartFile imageFile) throws Exception {
+    public void addProduct(Product product, MultipartFile imageFile) {
         Product _product = productRepo.save(product);
-        logger.info("Product saved: {}", _product);
-
-        String originalFilename = imageFile.getOriginalFilename();
-        Path filePath = Paths.get(imagePath, originalFilename).toAbsolutePath().normalize();
-        logger.info("Image file path: {}", filePath);
-
-        imageFile.transferTo(filePath.toFile());
-
-        ProductImages productImages = ProductImages.builder().imageUrl(filePath.toString()).imageName(originalFilename).product(_product).build();
-
+        Path filePath = ImageUploadUtility.productImageUpload(imageFile, imagePath);
+        ProductImages productImages = ProductImages.builder().imageUrl(filePath.toString().substring(47)).imageName(imageFile.getOriginalFilename()).product(_product).build();
         productImageRepo.save(productImages);
     }
 
@@ -63,42 +57,16 @@ public class ProductService {
         return products;
     }
 
-    public List<Product> findAllProducts() {
-        List<Product> productList = productRepo.findAll();
+    public Page<ProductDTO> findAllProducts(int pageNo, int pageSize) {
+        Pageable paging = PageRequest.of(pageNo, pageSize);
+        List<Product> products = productRepo.findAll(paging).getContent();
 
-        // Group products by productId
-        Map<Long, List<Product>> productGroups = productList.stream()
-                .collect(Collectors.groupingBy(Product::getProductId));
+        List<ProductDTO> productDTOList = products.stream().map(prod -> {
+            List<ProductImages> productImagesList = prod.getProductImages();
+            List<ProductImagesDTO> productImagesDTOList = productImagesList.stream().map(prodImages -> new ProductImagesDTO(prodImages.getId(), prodImages.getImageName(), prodImages.getImageUrl())).collect(Collectors.toList());
+            return new ProductDTO(prod.getProductId(), prod.getProductName(), prod.getProductDescription(), prod.getProductQty(), prod.getProductPrice(), productImagesDTOList);
+        }).collect(Collectors.toList());
 
-        productGroups.forEach((aLong, products) -> System.out.println(aLong + "__" + products.toString()));
-
-        // Transform grouped products into the desired format
-        List<Product> result = productGroups.values().stream()
-                .map(products -> {
-                    // Merge productImages lists
-                    List<ProductImages> productImages = products.stream()
-                            .flatMap(product -> product.getProductImages().stream())
-                            .collect(Collectors.toList());
-
-                    // Pick any product from the group to get common fields
-                    Product sampleProduct = products.get(0);
-
-                    // Create a new product with merged productImages
-                    return new Product(
-                            sampleProduct.getProductId(),
-                            sampleProduct.getProductName(),
-                            sampleProduct.getProductDescription(),
-                            sampleProduct.getProductQty(),
-                            sampleProduct.getProductPrice(),
-                            productImages,
-                            sampleProduct.getCreatedAt(),
-                            sampleProduct.getCreatedBy()
-                    );
-                })
-                .collect(Collectors.toList());
-
-        // Output the result
-        result.forEach(System.out::println);
-        return result;
+        return new PageImpl<>(productDTOList, paging, productDTOList.size());
     }
 }
