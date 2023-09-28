@@ -1,13 +1,11 @@
 package com.project.springbootangularcrud.controllers;
 
+import com.project.springbootangularcrud.dto.PaginationPageResponse;
 import com.project.springbootangularcrud.dto.ProductDTO;
 import com.project.springbootangularcrud.models.Product;
 import com.project.springbootangularcrud.services.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -58,12 +56,11 @@ public class ProductController {
     public ResponseEntity<?> findAllProducts(@RequestParam(value = "page", defaultValue = "0", required = false) int pageNo,
                                              @RequestParam(value = "size", defaultValue = "2", required = false) int pageSize) {
 
-        Page<ProductDTO> products = productService.findAllProducts(pageNo, pageSize);
-
-        if (products.isEmpty()) {
+        PaginationPageResponse<ProductDTO> products = productService.findAllProducts(pageNo, pageSize);
+       /* if (products.getContent().isEmpty()) {
             return new ResponseEntity<>("No products exist.", HttpStatus.NOT_FOUND);
-        } else {
+        } else {*/
             return new ResponseEntity<>(products, HttpStatus.OK);
-        }
+        //}
     }
 }

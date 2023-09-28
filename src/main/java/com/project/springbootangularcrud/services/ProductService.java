@@ -1,5 +1,6 @@
 package com.project.springbootangularcrud.services;
 
+import com.project.springbootangularcrud.dto.PaginationPageResponse;
 import com.project.springbootangularcrud.dto.ProductDTO;
 import com.project.springbootangularcrud.dto.ProductImagesDTO;
 import com.project.springbootangularcrud.models.Product;
@@ -11,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -57,9 +57,9 @@ public class ProductService {
         return products;
     }
 
-    public Page<ProductDTO> findAllProducts(int pageNo, int pageSize) {
+    public PaginationPageResponse<ProductDTO> findAllProducts(int pageNo, int pageSize) {
         Pageable paging = PageRequest.of(pageNo, pageSize);
-        List<Product> products = productRepo.findAll(paging).getContent();
+        Page<Product> products = productRepo.findAll(paging);
 
         List<ProductDTO> productDTOList = products.stream().map(prod -> {
             List<ProductImages> productImagesList = prod.getProductImages();
@@ -67,6 +67,9 @@ public class ProductService {
             return new ProductDTO(prod.getProductId(), prod.getProductName(), prod.getProductDescription(), prod.getProductQty(), prod.getProductPrice(), productImagesDTOList);
         }).collect(Collectors.toList());
 
-        return new PageImpl<>(productDTOList, paging, productDTOList.size());
+        return new PaginationPageResponse<>(productDTOList,
+                products.getNumber(),
+                products.getTotalElements(),
+                products.getTotalPages());
     }
 }
