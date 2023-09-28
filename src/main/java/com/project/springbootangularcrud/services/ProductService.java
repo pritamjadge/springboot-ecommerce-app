@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +54,6 @@ public class ProductService {
             List<ProductImagesDTO> productImages = productImageRepo.findAllByProductId(product.getProductId());
             product.setProductImages(productImages);
         }
-        logger.debug("getAllProducts {} :" + products.toString());
         return products;
     }
 
@@ -61,15 +61,44 @@ public class ProductService {
         Pageable paging = PageRequest.of(pageNo, pageSize);
         Page<Product> products = productRepo.findAll(paging);
 
+        return getProductDTOPaginationPageResponse(products);
+    }
+
+    public PaginationPageResponse<ProductDTO> findProductsByName(String productName, int pageNo, int pageSize) {
+        Pageable paging = PageRequest.of(pageNo, pageSize);
+        Page<Product> products = productRepo.findByProductNameContaining(productName, paging);
+
+        return getProductDTOPaginationPageResponse(products);
+    }
+
+    public PaginationPageResponse<ProductDTO> getProductDTOPaginationPageResponse(Page<Product> products) {
         List<ProductDTO> productDTOList = products.stream().map(prod -> {
             List<ProductImages> productImagesList = prod.getProductImages();
-            List<ProductImagesDTO> productImagesDTOList = productImagesList.stream().map(prodImages -> new ProductImagesDTO(prodImages.getId(), prodImages.getImageName(), prodImages.getImageUrl())).collect(Collectors.toList());
+            List<ProductImagesDTO> productImagesDTOList = productImagesList.stream().map(prodImages -> new ProductImagesDTO(prodImages.getId(), prodImages.getImageUrl())).collect(Collectors.toList());
             return new ProductDTO(prod.getProductId(), prod.getProductName(), prod.getProductDescription(), prod.getProductQty(), prod.getProductPrice(), productImagesDTOList);
         }).collect(Collectors.toList());
 
-        return new PaginationPageResponse<>(productDTOList,
-                products.getNumber(),
-                products.getTotalElements(),
-                products.getTotalPages());
+        return new PaginationPageResponse<>(productDTOList, products.getNumber(), products.getTotalElements(), products.getTotalPages());
+    }
+
+    public ProductDTO getProductDetail(Long productId) {
+        Optional<Product> productOptional = productRepo.findById(productId);
+
+        if (productOptional.isPresent()) {
+            Product product = productOptional.get();
+            List<ProductImagesDTO> productImagesDTOList = product.getProductImages().stream()
+                    .map(productImage -> new ProductImagesDTO(productImage.getId(), productImage.getImageUrl())).toList();
+
+            return ProductDTO.builder()
+                    .productId(product.getProductId())
+                    .productPrice(product.getProductPrice())
+                    .productQty(product.getProductQty())
+                    .productDescription(product.getProductDescription())
+                    .productName(product.getProductName())
+                    .productImages(productImagesDTOList)
+                    .build();
+        } else {
+            return null;
+        }
     }
 }

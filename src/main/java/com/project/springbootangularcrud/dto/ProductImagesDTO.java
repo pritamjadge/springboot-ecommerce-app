@@ -1,19 +1,21 @@
 package com.project.springbootangularcrud.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class ProductImagesDTO {
 
     private Long id;
-    private String imageName;
     private String imageUrl;
+    // private String imageName;
 
-    public ProductImagesDTO(Long id, String imageName, String imageUrl) {
+    public ProductImagesDTO(Long id, String imageUrl) {
         this.id = id;
-        this.imageName = imageName;
         this.imageUrl = imageUrl;
+        // this.imageName = imageName;
     }
 }

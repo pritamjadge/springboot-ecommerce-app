@@ -53,14 +53,34 @@ public class ProductController {
 
 
     @GetMapping(value = "/find_products")
-    public ResponseEntity<?> findAllProducts(@RequestParam(value = "page", defaultValue = "0", required = false) int pageNo,
-                                             @RequestParam(value = "size", defaultValue = "2", required = false) int pageSize) {
+    public ResponseEntity<?> findAllProducts(@RequestParam(value = "page", defaultValue = "0", required = false) int pageNo, @RequestParam(value = "size", defaultValue = "2", required = false) int pageSize) {
 
         PaginationPageResponse<ProductDTO> products = productService.findAllProducts(pageNo, pageSize);
        /* if (products.getContent().isEmpty()) {
             return new ResponseEntity<>("No products exist.", HttpStatus.NOT_FOUND);
         } else {*/
-            return new ResponseEntity<>(products, HttpStatus.OK);
+        return new ResponseEntity<>(products, HttpStatus.OK);
         //}
+    }
+
+    @GetMapping(value = "/find_products_by_name")
+    public ResponseEntity<?> findProductsByName(@RequestParam(value = "productName") String productName,
+                                                @RequestParam(value = "page", defaultValue = "0", required = false) int pageNo,
+                                                @RequestParam(value = "size", defaultValue = "2", required = false) int pageSize) {
+
+        PaginationPageResponse<ProductDTO> products = productService.findProductsByName(productName, pageNo, pageSize);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/product_details/{id}")
+    public ResponseEntity<ProductDTO> getProductDetail(@PathVariable("id") Long productId) {
+
+        ProductDTO productDetail = productService.getProductDetail(productId);
+
+        if (productDetail != null) {
+            return ResponseEntity.ok(productDetail);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 }
