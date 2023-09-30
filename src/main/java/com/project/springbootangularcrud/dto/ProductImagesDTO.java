@@ -18,4 +18,7 @@ public class ProductImagesDTO {
         this.imageUrl = imageUrl;
         // this.imageName = imageName;
     }
+
+    public ProductImagesDTO() {
+    }
 }

@@ -25,4 +25,7 @@ public class ProductDTO {
         this.productPrice = productPrice;
         this.productImages = productImages;
     }
+
+    public ProductDTO() {
+    }
 }
