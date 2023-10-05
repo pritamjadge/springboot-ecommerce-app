@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@CrossOrigin("*")
 @RestController
 @RequestMapping("api/product")
 public class ProductController {
@@ -34,7 +33,7 @@ public class ProductController {
                 productService.addProduct(product, imageFile);
                 return ResponseEntity.ok("Product added successfully.");
             } else if (product == null) {
-                return ResponseEntity.badRequest().body("product is missing.");
+                return ResponseEntity.badRequest().body("Product is missing.");
             } else {
                 return ResponseEntity.badRequest().body("Image File is missing.");
             }
@@ -64,23 +63,26 @@ public class ProductController {
     }
 
     @GetMapping(value = "/find_products_by_name")
-    public ResponseEntity<?> findProductsByName(@RequestParam(value = "productName") String productName,
-                                                @RequestParam(value = "page", defaultValue = "0", required = false) int pageNo,
-                                                @RequestParam(value = "size", defaultValue = "2", required = false) int pageSize) {
+    public ResponseEntity<?> findProductsByNameOrCategory(@RequestParam(value = "productName", required = false) String productName,
+                                                          @RequestParam(value = "categoryId", required = false) Long categoryId,
+                                                          @RequestParam(value = "page", defaultValue = "0", required = false) Integer pageNo,
+                                                          @RequestParam(value = "size", defaultValue = "2", required = false) Integer pageSize) {
 
-        PaginationPageResponse<ProductDTO> products = productService.findProductsByName(productName, pageNo, pageSize);
+        System.out.println("productName {} :" + productName);
+        System.out.println("categoryId {} :" + categoryId);
+        PaginationPageResponse<ProductDTO> products = productService.findProductsByNameOrCategory(productName, categoryId, pageNo, pageSize);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @GetMapping(value = "/product_details/{id}")
-    public ResponseEntity<ProductDTO> getProductDetail(@PathVariable("id") Long productId) {
+    public ResponseEntity<?> getProductDetail(@PathVariable("id") Long productId) {
 
         ProductDTO productDetail = productService.getProductDetail(productId);
 
         if (productDetail != null) {
             return ResponseEntity.ok(productDetail);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product does not exist");
         }
     }
 }

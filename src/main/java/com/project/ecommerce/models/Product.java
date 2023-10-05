@@ -24,7 +24,7 @@ public class Product {
     private Integer productQty;
     private Double productPrice;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties("products")
     private Category category;

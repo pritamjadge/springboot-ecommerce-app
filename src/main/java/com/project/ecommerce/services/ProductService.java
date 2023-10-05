@@ -2,6 +2,7 @@ package com.project.ecommerce.services;
 
 import com.project.ecommerce.dto.PaginationPageResponse;
 import com.project.ecommerce.dto.ProductDTO;
+import com.project.ecommerce.models.Category;
 import com.project.ecommerce.models.Product;
 import com.project.ecommerce.models.ProductImages;
 import com.project.ecommerce.repository.ProductImageRepo;
@@ -70,9 +71,20 @@ public class ProductService {
         return getProductDTOPaginationPageResponse(products);
     }
 
-    public PaginationPageResponse<ProductDTO> findProductsByName(String productName, int pageNo, int pageSize) {
+    public PaginationPageResponse<ProductDTO> findProductsByNameOrCategory(String productName, Long categoryId, Integer pageNo, Integer pageSize) {
         Pageable paging = PageRequest.of(pageNo, pageSize);
-        Page<Product> products = productRepo.findByProductNameContaining(productName, paging);
+        Page<Product> products;
+
+        if (!productName.isEmpty() && categoryId != null) {
+            products = productRepo.findByProductNameContainingAndCategoryCategoryId(productName, categoryId, paging);
+        } else if (!productName.isEmpty()) {
+            products = productRepo.findByProductNameContaining(productName, paging);
+        } else if (categoryId != null) {
+            products = productRepo.findByCategoryCategoryId(categoryId, paging);
+        } else {
+            products = productRepo.findAll(paging);
+        }
+
         return getProductDTOPaginationPageResponse(products);
     }
 

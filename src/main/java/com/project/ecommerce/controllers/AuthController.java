@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.project.ecommerce.payload.request.RolesRequest;
+import com.project.ecommerce.models.*;
+import com.project.ecommerce.repository.ConfirmationTokenRepository;
+import com.project.ecommerce.utility.UserVerificationUtility;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,17 +16,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import com.project.ecommerce.exception.TokenRefreshException;
-import com.project.ecommerce.models.ERole;
-import com.project.ecommerce.models.RefreshToken;
-import com.project.ecommerce.models.Role;
-import com.project.ecommerce.models.User;
 import com.project.ecommerce.payload.request.LoginRequest;
 import com.project.ecommerce.payload.request.SignupRequest;
 import com.project.ecommerce.payload.request.TokenRefreshRequest;
@@ -37,9 +31,9 @@ import com.project.ecommerce.repository.UserRepository;
 import com.project.ecommerce.security.jwt.JwtUtils;
 import com.project.ecommerce.security.services.RefreshTokenService;
 import com.project.ecommerce.security.services.UserDetailsImpl;
+import org.springframework.web.servlet.ModelAndView;
 
 import static com.project.ecommerce.payload.request.RolesRequest.ADMIN_ROLE;
-import static com.project.ecommerce.payload.request.RolesRequest.MODERATOR_ROLE;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -57,13 +51,19 @@ public class AuthController {
 
     final RefreshTokenService refreshTokenService;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, RefreshTokenService refreshTokenService) {
+    final UserVerificationUtility userVerificationUtility;
+
+    final ConfirmationTokenRepository confirmationTokenRepository;
+
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, RefreshTokenService refreshTokenService, UserVerificationUtility userVerificationUtility, ConfirmationTokenRepository confirmationTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
         this.refreshTokenService = refreshTokenService;
+        this.userVerificationUtility = userVerificationUtility;
+        this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
     @PostMapping("/signIn")
@@ -74,6 +74,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        System.out.println("userDetails {} :" + userDetails);
 
         String jwt = jwtUtils.generateJwtToken(userDetails);
 
@@ -85,7 +86,9 @@ public class AuthController {
     }
 
     @PostMapping("/signUp")
+    @Transactional
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
         }
@@ -105,27 +108,25 @@ public class AuthController {
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
-                switch (role) {
-                    case ADMIN_ROLE -> {
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                    }
+                if (ADMIN_ROLE.equals(role)) {
+                    Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(adminRole);
                     /*case MODERATOR_ROLE -> {
                         Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(modRole);
                     }*/
-                    default -> {
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                    }
+                } else {
+                    Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(userRole);
                 }
             });
         }
 
         user.setRoles(roles);
         userRepository.save(user);
+        String verificationMessage = userVerificationUtility.emailTokenConfirmation(user);
+        return ResponseEntity.ok(new MessageResponse("User registered successfully! " + verificationMessage));
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
     @PostMapping("/refreshToken")
@@ -143,7 +144,27 @@ public class AuthController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         refreshTokenService.deleteByUserId(userId);
-        return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+        return ResponseEntity.ok(new MessageResponse("Log out successfully!"));
     }
+
+    @GetMapping("/confirm-account")
+    public ModelAndView confirmUserAccount(@RequestParam("token") String token, ModelAndView modelAndView) {
+        System.out.println("confirmUserAccount: " + token);
+        ConfirmationToken confirmationToken = confirmationTokenRepository.findByConfirmationToken(token);
+
+        if (confirmationToken != null) {
+            User user = userRepository.findByEmailIgnoreCase(confirmationToken.getUser().getEmail());
+            user.setIsEnabled(true);
+            userRepository.save(user);
+
+            modelAndView.addObject("signInLink", "http://localhost:4200/login");
+            modelAndView.setViewName("accountVerified");
+        } else {
+            modelAndView.addObject("message", "The link is invalid or broken!");
+            modelAndView.setViewName("error");
+        }
+        return modelAndView;
+    }
+
 
 }
