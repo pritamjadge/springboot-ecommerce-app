@@ -21,9 +21,11 @@ This is a Spring Boot-based eCommerce application that allows users to browse, s
 ## Installation
 
 1. Clone the repository:
-
-   ```shell
+```shell
    git clone https://github.com/pritamjadge/springboot-ecommerce-app.git
 ```
 
-   github token : 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
+2.Github TOKEN (expiry not set)
+```
+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
+```
