@@ -60,6 +60,7 @@ public class ProductController {
         } else {*/
         return new ResponseEntity<>(products, HttpStatus.OK);
         //}
+
     }
 
     @GetMapping(value = "/find_products_by_name")
