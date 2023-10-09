@@ -77,7 +77,7 @@ public class ProductController {
     @GetMapping(value = "/product_details/{id}")
     public ResponseEntity<?> getProductDetail(@PathVariable("id") Long productId) {
 
-        ProductDTO productDetail = productService.getProductDetail(productId);
+        var productDetail = productService.getProductDetail(productId);
 
         if (productDetail != null) {
             return ResponseEntity.ok(productDetail);
