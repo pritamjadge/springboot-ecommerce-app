@@ -75,7 +75,14 @@ public class ProductController {
     }
 
     @GetMapping(value = "/product_details/{id}")
-    public ResponseEntity<?> getProductDetail(@PathVariable("id") Long productId) {
+    public ResponseEntity<?> getProductDetail(@PathVariable("id") String productIdStr) {
+
+        long productId;
+        try {
+            productId = Long.parseLong(productIdStr);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid product ID format");
+        }
 
         ProductDTO productDetail = productService.getProductDetail(productId);
 
