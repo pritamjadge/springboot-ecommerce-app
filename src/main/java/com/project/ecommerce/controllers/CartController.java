@@ -1,10 +1,13 @@
 package com.project.ecommerce.controllers;
 
+import com.project.ecommerce.dto.CartItemDTO;
 import com.project.ecommerce.exception.ResourceNotFoundException;
 import com.project.ecommerce.services.CartService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/cart")
@@ -24,19 +27,29 @@ public class CartController {
 
         try {
             String cartUpdate = cartService.addToCart(userName, productId, productQty);
-            System.out.println(cartUpdate);
             return ResponseEntity.ok(cartUpdate);
         } catch (ResourceNotFoundException | IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @GetMapping("/cart_count/{username}")
-    public ResponseEntity<?> cartCount(@PathVariable("username") String userName) {
+    public ResponseEntity<Integer> cartCount(@PathVariable("username") String userName) {
         try {
-            return ResponseEntity.ok(cartService.cartCount(userName));
+            int count = cartService.cartCount(userName);
+            return ResponseEntity.ok(count);
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/get_cart_items/{username}")
+    public ResponseEntity<List<CartItemDTO>> getCartItems(@PathVariable("username") String userName) {
+        try {
+            List<CartItemDTO> cartItems = cartService.getCartItems(userName);
+            return ResponseEntity.ok(cartItems);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

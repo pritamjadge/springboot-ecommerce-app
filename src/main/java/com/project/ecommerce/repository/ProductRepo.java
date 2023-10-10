@@ -22,9 +22,5 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
 
     Page<Product> findByProductNameContainingAndCategoryCategoryId(String productName, Long categoryId, Pageable pageable);
 
-/*
-    @Query("SELECT p FROM Product p WHERE LOWER(p.productName) LIKE %:productName%")
-    Page<Product> findByProductNameContainingIgnoreCase(@Param("productName") String productName, Pageable pageable);
-*/
 
 }

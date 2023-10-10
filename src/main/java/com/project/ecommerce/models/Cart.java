@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class Cart {
 
     @Id
@@ -40,4 +42,6 @@ public class Cart {
         this.product = product;
         this.user = user;
     }
+
+
 }
