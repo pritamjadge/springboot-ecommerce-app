@@ -4,6 +4,7 @@ import com.project.ecommerce.dto.CartItemDTO;
 import com.project.ecommerce.exception.ResourceNotFoundException;
 import com.project.ecommerce.services.CartService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +29,10 @@ public class CartController {
         try {
             String cartUpdate = cartService.addToCart(userName, productId, productQty);
             return ResponseEntity.ok(cartUpdate);
-        } catch (ResourceNotFoundException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -48,6 +51,16 @@ public class CartController {
         try {
             List<CartItemDTO> cartItems = cartService.getCartItems(userName);
             return ResponseEntity.ok(cartItems);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping(value = "/remove_cart_item/{cartId}/{username}")
+    public ResponseEntity<String> removeCartItems(@PathVariable("cartId") Long cartId, @PathVariable("username") String userName) {
+        try {
+            String response = cartService.removeCartItems(cartId, userName);
+            return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
