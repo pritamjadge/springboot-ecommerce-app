@@ -23,7 +23,10 @@ public class SpringBootEcommerceApplication {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedHeaders("*").allowedOrigins("*");
+                registry.addMapping("/**")
+                        .allowedHeaders("*")
+                        .allowedOrigins("*")
+                        .allowedMethods("*");
             }
         };
     }
