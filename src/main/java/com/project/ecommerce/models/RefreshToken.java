@@ -20,9 +20,6 @@ public class RefreshToken {
   @Column(nullable = false)
   private Instant expiryDate;
 
-  public RefreshToken() {
-  }
-
   public long getId() {
     return id;
   }

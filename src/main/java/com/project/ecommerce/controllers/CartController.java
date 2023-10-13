@@ -4,7 +4,6 @@ import com.project.ecommerce.dto.CartItemDTO;
 import com.project.ecommerce.exception.ResourceNotFoundException;
 import com.project.ecommerce.services.CartService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

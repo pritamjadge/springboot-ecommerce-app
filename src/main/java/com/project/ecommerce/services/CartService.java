@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -79,7 +78,7 @@ public class CartService {
     public List<CartItemDTO> getCartItems(String userName) {
         User user = getUserByUsername(userName);
         Long userId = user.getId();
-        return getCartByUserId(userId).stream().map(this::convertToCartItemDTO).collect(Collectors.toList());
+        return getCartByUserId(userId).stream().map(this::convertToCartItemDTO).toList();
     }
 
     private User getUserByUsername(String userName) {
