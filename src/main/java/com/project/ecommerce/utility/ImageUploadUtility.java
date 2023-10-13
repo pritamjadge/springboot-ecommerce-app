@@ -11,6 +11,7 @@ import java.util.Objects;
 
 public class ImageUploadUtility {
 
+    private ImageUploadUtility(){}
 
     public static Path productImageUpload(MultipartFile imageFile, String imagePath) {
         try {
