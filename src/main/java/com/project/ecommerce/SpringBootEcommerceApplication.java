@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -26,7 +27,14 @@ public class SpringBootEcommerceApplication {
                 registry.addMapping("/**")
                         .allowedHeaders("*")
                         .allowedOrigins("*")
-                        .allowedMethods("*");
+                        .allowedMethods(
+                                HttpMethod.GET.name(),
+                                HttpMethod.POST.name(),
+                                HttpMethod.PUT.name(),
+                                HttpMethod.DELETE.name(),
+                                HttpMethod.PATCH.name(),
+                                HttpMethod.OPTIONS.name()
+                        );
             }
         };
     }

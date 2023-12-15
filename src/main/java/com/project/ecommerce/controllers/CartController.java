@@ -2,7 +2,9 @@ package com.project.ecommerce.controllers;
 
 import com.project.ecommerce.dto.CartItemDTO;
 import com.project.ecommerce.exception.ResourceNotFoundException;
+import com.project.ecommerce.models.TransactionDetails;
 import com.project.ecommerce.services.CartService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +22,7 @@ public class CartController {
     }
 
     @PostMapping("/add_to_cart/{user_name}/{product_id}")
-    public ResponseEntity<String> productAddToCart(
-            @PathVariable("user_name") String userName,
-            @PathVariable("product_id") Long productId,
-            @RequestParam(value = "product_qty", defaultValue = "1", required = false) Integer productQty) {
+    public ResponseEntity<String> productAddToCart(@PathVariable("user_name") String userName, @PathVariable("product_id") Long productId, @RequestParam(value = "product_qty", defaultValue = "1", required = false) Integer productQty) {
 
         try {
             String cartUpdate = cartService.addToCart(userName, productId, productQty);
@@ -63,5 +62,22 @@ public class CartController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PatchMapping("/update_product_quantity/{cartId}/{selectedQuantity}")
+    public ResponseEntity<String> updateCartProductQuantity(@PathVariable("cartId") Long cartId, @PathVariable("selectedQuantity") Integer selectedQuantity) {
+        try {
+            String response = cartService.updateCartProductQuantity(cartId, selectedQuantity);
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    //  @PreAuthorize("hasRole('User')")
+    @PostMapping("/create_transaction/{grandAmount}")
+    public ResponseEntity<TransactionDetails> createTransaction(@PathVariable("grandAmount") Double grandAmount) {
+        var transactionDetails = cartService.createTransaction(grandAmount);
+        return new ResponseEntity<>(transactionDetails, HttpStatus.OK);
     }
 }
