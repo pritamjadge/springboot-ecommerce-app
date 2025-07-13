@@ -2,7 +2,6 @@ package com.project.ecommerce.services;
 
 import com.project.ecommerce.dto.PaginationPageResponse;
 import com.project.ecommerce.dto.ProductDTO;
-import com.project.ecommerce.models.Category;
 import com.project.ecommerce.models.Product;
 import com.project.ecommerce.models.ProductImages;
 import com.project.ecommerce.repository.ProductImageRepo;
@@ -22,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -49,12 +47,12 @@ public class ProductService {
 
     @Transactional
     public void addProduct(Product product, MultipartFile imageFile) {
-        Product _product = productRepo.save(product);
+        Product productSaved = productRepo.save(product);
         Path filePath = ImageUploadUtility.productImageUpload(imageFile, imagePath);
         ProductImages productImages = ProductImages.builder().
                 imageUrl(filePath.toString().substring(47)).
                 imageName(imageFile.getOriginalFilename()).
-                product(_product).
+                product(productSaved).
                 build();
         productImageRepo.save(productImages);
     }
@@ -62,8 +60,9 @@ public class ProductService {
     //not in use - will remove in future
     public List<ProductDTO> getAllProducts() {
         List<Product> products = productRepo.findAll();
-        return products.stream().map(this::convertProductToProductDTO).collect(Collectors.toList());
+        return products.stream().map(this::convertProductToProductDTO).toList();
     }
+
 
     public PaginationPageResponse<ProductDTO> findAllProducts(int pageNo, int pageSize) {
         Pageable paging = PageRequest.of(pageNo, pageSize);
@@ -89,7 +88,7 @@ public class ProductService {
     }
 
     public PaginationPageResponse<ProductDTO> getProductDTOPaginationPageResponse(Page<Product> products) {
-        List<ProductDTO> productDTOList = products.stream().map(this::convertProductToProductDTO).collect(Collectors.toList());
+        List<ProductDTO> productDTOList = products.stream().map(this::convertProductToProductDTO).toList();
         return new PaginationPageResponse<>(productDTOList, products.getNumber(), products.getTotalElements(), products.getTotalPages());
     }
 

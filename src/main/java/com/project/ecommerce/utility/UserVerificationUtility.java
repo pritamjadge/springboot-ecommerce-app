@@ -34,7 +34,7 @@ public class UserVerificationUtility {
         ConfirmationToken confirmationToken = new ConfirmationToken(user);
         confirmationTokenRepository.save(confirmationToken);
 
-        String mailText = "To confirm your account, please click here: " + "http://localhost:8080/api/auth/confirm-account?token=" + confirmationToken.getConfirmationToken();
+        String mailText = "To confirm your account, please click here: " + "http://ecom-app-env.eba-zyk4rrdx.ap-south-1.elasticbeanstalk.com/ecommerce-app/api/auth/confirm-account?token=" + confirmationToken.getConfirmationToken();
         logger.info("mailText {} :" + mailText);
         mailMessage.setTo(user.getEmail());
         mailMessage.setSubject(MAIL_SUBJECT);

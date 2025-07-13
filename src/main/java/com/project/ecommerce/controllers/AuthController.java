@@ -1,12 +1,19 @@
 package com.project.ecommerce.controllers;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.project.ecommerce.exception.TokenRefreshException;
 import com.project.ecommerce.models.*;
+import com.project.ecommerce.payload.request.LoginRequest;
+import com.project.ecommerce.payload.request.SignupRequest;
+import com.project.ecommerce.payload.request.TokenRefreshRequest;
+import com.project.ecommerce.payload.response.JwtResponse;
+import com.project.ecommerce.payload.response.MessageResponse;
+import com.project.ecommerce.payload.response.TokenRefreshResponse;
 import com.project.ecommerce.repository.ConfirmationTokenRepository;
+import com.project.ecommerce.repository.RoleRepository;
+import com.project.ecommerce.repository.UserRepository;
+import com.project.ecommerce.security.jwt.JwtUtils;
+import com.project.ecommerce.security.services.RefreshTokenService;
+import com.project.ecommerce.security.services.UserDetailsImpl;
 import com.project.ecommerce.utility.UserVerificationUtility;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -18,20 +25,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import com.project.ecommerce.exception.TokenRefreshException;
-import com.project.ecommerce.payload.request.LoginRequest;
-import com.project.ecommerce.payload.request.SignupRequest;
-import com.project.ecommerce.payload.request.TokenRefreshRequest;
-import com.project.ecommerce.payload.response.JwtResponse;
-import com.project.ecommerce.payload.response.MessageResponse;
-import com.project.ecommerce.payload.response.TokenRefreshResponse;
-import com.project.ecommerce.repository.RoleRepository;
-import com.project.ecommerce.repository.UserRepository;
-import com.project.ecommerce.security.jwt.JwtUtils;
-import com.project.ecommerce.security.services.RefreshTokenService;
-import com.project.ecommerce.security.services.UserDetailsImpl;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.project.ecommerce.payload.request.RolesRequest.ADMIN_ROLE;
 
@@ -55,6 +53,9 @@ public class AuthController {
 
     final ConfirmationTokenRepository confirmationTokenRepository;
 
+    private static final String ROLE_ERROR = "Error: Role is not found.";
+
+
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, RefreshTokenService refreshTokenService, UserVerificationUtility userVerificationUtility, ConfirmationTokenRepository confirmationTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -74,11 +75,12 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        System.out.println("userDetails {} :" + userDetails);
 
         String jwt = jwtUtils.generateJwtToken(userDetails);
 
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
@@ -104,19 +106,15 @@ public class AuthController {
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException(ROLE_ERROR));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 if (ADMIN_ROLE.equals(role)) {
-                    Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException(ROLE_ERROR));
                     roles.add(adminRole);
-                    /*case MODERATOR_ROLE -> {
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(modRole);
-                    }*/
                 } else {
-                    Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException(ROLE_ERROR));
                     roles.add(userRole);
                 }
             });
@@ -140,7 +138,7 @@ public class AuthController {
     }
 
     @PostMapping("/signOut")
-    public ResponseEntity<?> logoutUser() {
+    public ResponseEntity<MessageResponse> logoutUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         refreshTokenService.deleteByUserId(userId);
@@ -149,7 +147,6 @@ public class AuthController {
 
     @GetMapping("/confirm-account")
     public ModelAndView confirmUserAccount(@RequestParam("token") String token, ModelAndView modelAndView) {
-        System.out.println("confirmUserAccount: " + token);
         ConfirmationToken confirmationToken = confirmationTokenRepository.findByConfirmationToken(token);
 
         if (confirmationToken != null) {
@@ -157,7 +154,7 @@ public class AuthController {
             user.setIsEnabled(true);
             userRepository.save(user);
 
-            modelAndView.addObject("signInLink", "http://localhost:4200/login");
+            modelAndView.addObject("signInLink", "http://ecommerce-angular-app.s3-website.ap-south-1.amazonaws.com/login");
             modelAndView.setViewName("accountVerified");
         } else {
             modelAndView.addObject("message", "The link is invalid or broken!");
@@ -165,6 +162,5 @@ public class AuthController {
         }
         return modelAndView;
     }
-
 
 }

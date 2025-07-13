@@ -4,7 +4,6 @@ import com.project.ecommerce.dto.CartItemDTO;
 import com.project.ecommerce.exception.ResourceNotFoundException;
 import com.project.ecommerce.services.CartService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,4 +64,15 @@ public class CartController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PatchMapping("/update_product_quantity/{cartId}/{selectedQuantity}")
+    public ResponseEntity<String> updateCartProductQuantity(@PathVariable("cartId") Long cartId, @PathVariable("selectedQuantity") Integer selectedQuantity) {
+        try {
+            String response = cartService.updateCartProductQuantity(cartId, selectedQuantity);
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
