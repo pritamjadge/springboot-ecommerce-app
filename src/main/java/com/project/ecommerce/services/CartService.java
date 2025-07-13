@@ -30,7 +30,7 @@ public class CartService {
         this.productRepo = productRepo;
     }
 
-
+    @Transactional
     public String addToCart(String userName, Long productId, Integer productQty) throws ResourceNotFoundException, IllegalArgumentException {
         User user = userRepository.findByUsername(userName).orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
 
@@ -104,4 +104,13 @@ public class CartService {
         return cartRepo.findByUser_Id(userId);
     }
 
+    public String updateCartProductQuantity(Long cartId, Integer selectedProductQty) {
+        int affectedRow = cartRepo.updateProductQtyByCartId(cartId, selectedProductQty);
+
+        if (affectedRow == 1) {
+            return "Product quantity updated successfully.";
+        } else {
+            throw new ResourceNotFoundException("Cart not found with id: " + cartId);
+        }
+    }
 }

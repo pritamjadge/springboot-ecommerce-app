@@ -64,4 +64,15 @@ public class CartController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PatchMapping("/update_product_quantity/{cartId}/{selectedQuantity}")
+    public ResponseEntity<String> updateCartProductQuantity(@PathVariable("cartId") Long cartId, @PathVariable("selectedQuantity") Integer selectedQuantity) {
+        try {
+            String response = cartService.updateCartProductQuantity(cartId, selectedQuantity);
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

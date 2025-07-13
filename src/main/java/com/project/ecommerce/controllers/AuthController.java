@@ -154,7 +154,7 @@ public class AuthController {
             user.setIsEnabled(true);
             userRepository.save(user);
 
-            modelAndView.addObject("signInLink", "http://localhost:4200/login");
+            modelAndView.addObject("signInLink", "http://ecommerce-angular-app.s3-website.ap-south-1.amazonaws.com/login");
             modelAndView.setViewName("accountVerified");
         } else {
             modelAndView.addObject("message", "The link is invalid or broken!");
@@ -162,6 +162,5 @@ public class AuthController {
         }
         return modelAndView;
     }
-
 
 }

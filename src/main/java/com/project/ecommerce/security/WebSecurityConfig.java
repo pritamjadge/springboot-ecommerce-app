@@ -117,7 +117,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 //                .anyRequest().authenticated();
 
         http.cors();
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable()) // CSRF protection is intentionally disabled due to stateless authentication using JWT.
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->

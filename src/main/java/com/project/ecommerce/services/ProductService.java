@@ -63,6 +63,7 @@ public class ProductService {
         return products.stream().map(this::convertProductToProductDTO).toList();
     }
 
+
     public PaginationPageResponse<ProductDTO> findAllProducts(int pageNo, int pageSize) {
         Pageable paging = PageRequest.of(pageNo, pageSize);
         Page<Product> products = productRepo.findAll(paging);
