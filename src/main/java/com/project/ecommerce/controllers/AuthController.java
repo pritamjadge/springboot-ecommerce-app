@@ -145,6 +145,7 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Log out successfully!"));
     }
 
+
     @GetMapping("/confirm-account")
     public ModelAndView confirmUserAccount(@RequestParam("token") String token, ModelAndView modelAndView) {
         ConfirmationToken confirmationToken = confirmationTokenRepository.findByConfirmationToken(token);
